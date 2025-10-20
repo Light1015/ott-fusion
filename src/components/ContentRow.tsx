@@ -4,7 +4,7 @@ import MovieCard from "./MovieCard";
 import { useRef } from "react";
 
 interface Movie {
-  id: number;
+  id: string;
   image: string;
   title: string;
   genre: string;
@@ -52,6 +52,7 @@ const ContentRow = ({ title, movies }: ContentRowProps) => {
           {movies.map((movie) => (
             <MovieCard
               key={movie.id}
+              id={movie.id}
               image={movie.image}
               title={movie.title}
               genre={movie.genre}

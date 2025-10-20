@@ -1,17 +1,20 @@
+import { useNavigate } from "react-router-dom";
 import { Play, Plus, ThumbsUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface MovieCardProps {
+  id: string;
   image: string;
   title: string;
   genre?: string;
   rating?: string;
 }
 
-const MovieCard = ({ image, title, genre, rating }: MovieCardProps) => {
+const MovieCard = ({ id, image, title, genre, rating }: MovieCardProps) => {
+  const navigate = useNavigate();
   return (
     <div className="group relative flex-shrink-0 w-[200px] md:w-[250px] cursor-pointer">
-      <div className="card-hover overflow-hidden rounded-lg">
+      <div className="card-hover overflow-hidden rounded-lg" onClick={() => navigate(`/movie/${id}`)}>
         <img
           src={image}
           alt={title}
@@ -21,7 +24,12 @@ const MovieCard = ({ image, title, genre, rating }: MovieCardProps) => {
         {/* Hover Overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
           <div className="absolute bottom-0 left-0 right-0 p-4 space-y-2">
-            <h3 className="text-foreground font-semibold text-lg">{title}</h3>
+            <h3 
+              className="text-foreground font-semibold text-lg cursor-pointer hover:text-primary"
+              onClick={() => navigate(`/movie/${id}`)}
+            >
+              {title}
+            </h3>
             {genre && <p className="text-foreground/70 text-sm">{genre}</p>}
             {rating && (
               <div className="flex items-center gap-2">
