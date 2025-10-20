@@ -7,6 +7,8 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import MoviesShows from "./pages/MoviesShows";
 import MovieDetail from "./pages/MovieDetail";
+import Support from "./pages/Support";
+import Subscription from "./pages/Subscription";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -22,6 +24,8 @@ const App = () => (
           <Route path="/auth" element={<Auth />} />
           <Route path="/movies-shows" element={<MoviesShows />} />
           <Route path="/movie/:id" element={<MovieDetail />} />
+          <Route path="/support" element={<Support />} />
+          <Route path="/subscription" element={<Subscription />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

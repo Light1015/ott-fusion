@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import ContentRow from "@/components/ContentRow";
@@ -30,17 +31,17 @@ const Index = () => {
             <div>
               <h3 className="font-semibold mb-4 text-foreground">Support</h3>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><a href="#" className="hover:text-foreground">Help Center</a></li>
-                <li><a href="#" className="hover:text-foreground">Contact Us</a></li>
-                <li><a href="#" className="hover:text-foreground">FAQ</a></li>
+                <li><Link to="/support" className="hover:text-foreground">Help Center</Link></li>
+                <li><Link to="/support" className="hover:text-foreground">Contact Us</Link></li>
+                <li><Link to="/support" className="hover:text-foreground">FAQ</Link></li>
               </ul>
             </div>
             <div>
               <h3 className="font-semibold mb-4 text-foreground">Legal</h3>
               <ul className="space-y-2 text-sm text-muted-foreground">
+                <li><Link to="/subscription" className="hover:text-foreground">Pricing</Link></li>
                 <li><a href="#" className="hover:text-foreground">Privacy Policy</a></li>
                 <li><a href="#" className="hover:text-foreground">Terms of Service</a></li>
-                <li><a href="#" className="hover:text-foreground">Cookie Policy</a></li>
               </ul>
             </div>
             <div>
