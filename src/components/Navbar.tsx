@@ -1,17 +1,25 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Search, Bell, User, LogOut, Heart } from "lucide-react";
+import { Search, Bell, Heart, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { trendingNow, newReleases, popularMovies } from "@/data/movies";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const Navbar = () => {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState<any>(null);
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [showUserMenu, setShowUserMenu] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -118,25 +126,59 @@ const Navbar = () => {
           >
             <Bell className="h-5 w-5" />
           </Button>
-          {user && (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => navigate("/my-list")}
-              className="nav-icon-hover text-foreground"
-            >
-              <Heart className="h-5 w-5" />
-            </Button>
-          )}
           {user ? (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={handleLogout}
-              className="nav-icon-hover text-foreground"
-            >
-              <LogOut className="h-5 w-5" />
-            </Button>
+            <DropdownMenu open={showUserMenu} onOpenChange={setShowUserMenu}>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="nav-icon-hover">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src="" />
+                    <AvatarFallback className="bg-primary text-primary-foreground text-sm">
+                      {user?.email?.[0].toUpperCase() || "U"}
+                    </AvatarFallback>
+                  </Avatar>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-64 bg-card border-border">
+                <div className="flex items-center gap-3 p-3 border-b border-border">
+                  <Avatar className="h-12 w-12">
+                    <AvatarImage src="" />
+                    <AvatarFallback className="bg-primary text-primary-foreground">
+                      {user?.email?.[0].toUpperCase() || "U"}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1">
+                    <p className="font-medium text-foreground text-sm">Đoạn Trang</p>
+                    <p className="text-xs text-muted-foreground">{user?.email}</p>
+                  </div>
+                </div>
+                <DropdownMenuItem
+                  onClick={() => {
+                    navigate("/profile");
+                    setShowUserMenu(false);
+                  }}
+                  className="cursor-pointer py-3 px-3 text-foreground hover:bg-muted"
+                >
+                  <span className="text-sm">Xem thông tin của bạn</span>
+                  <ChevronRight className="h-4 w-4 ml-auto" />
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => {
+                    navigate("/my-list");
+                    setShowUserMenu(false);
+                  }}
+                  className="cursor-pointer py-3 px-3 text-foreground hover:bg-muted"
+                >
+                  <Heart className="h-4 w-4 mr-2" />
+                  <span className="text-sm">Phim đã theo dõi</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={handleLogout}
+                  className="cursor-pointer py-3 px-3 text-foreground hover:bg-muted"
+                >
+                  <span className="text-sm">Đăng xuất</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           ) : (
             <Button
               variant="ghost"
@@ -144,7 +186,11 @@ const Navbar = () => {
               onClick={() => navigate("/auth")}
               className="nav-icon-hover text-foreground"
             >
-              <User className="h-5 w-5" />
+              <Avatar className="h-8 w-8">
+                <AvatarFallback className="bg-muted">
+                  <span className="text-muted-foreground">?</span>
+                </AvatarFallback>
+              </Avatar>
             </Button>
           )}
 

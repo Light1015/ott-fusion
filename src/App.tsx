@@ -10,6 +10,7 @@ import MovieDetail from "./pages/MovieDetail";
 import MyList from "./pages/MyList";
 import Support from "./pages/Support";
 import Subscription from "./pages/Subscription";
+import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,6 +29,7 @@ const App = () => (
           <Route path="/my-list" element={<MyList />} />
           <Route path="/support" element={<Support />} />
           <Route path="/subscription" element={<Subscription />} />
+          <Route path="/profile" element={<Profile />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

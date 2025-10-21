@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Play, Plus, ThumbsUp } from "lucide-react";
+import { Play, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 
@@ -15,58 +15,32 @@ interface MovieCardProps {
 const MovieCard = ({ id, image, title, genre, rating }: MovieCardProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [isLiked, setIsLiked] = useState(false);
-  const [isInList, setIsInList] = useState(false);
+  const [isFollowing, setIsFollowing] = useState(false);
 
   useEffect(() => {
-    const liked = JSON.parse(localStorage.getItem("likedMovies") || "[]");
-    const myList = JSON.parse(localStorage.getItem("myList") || "[]");
-    setIsLiked(liked.includes(id));
-    setIsInList(myList.includes(id));
+    const following = JSON.parse(localStorage.getItem("followingMovies") || "[]");
+    setIsFollowing(following.includes(id));
   }, [id]);
 
-  const handleLike = (e: React.MouseEvent) => {
+  const handleFollow = (e: React.MouseEvent) => {
     e.stopPropagation();
-    const liked = JSON.parse(localStorage.getItem("likedMovies") || "[]");
+    const following = JSON.parse(localStorage.getItem("followingMovies") || "[]");
     
-    if (isLiked) {
-      const updated = liked.filter((movieId: string) => movieId !== id);
-      localStorage.setItem("likedMovies", JSON.stringify(updated));
-      setIsLiked(false);
+    if (isFollowing) {
+      const updated = following.filter((movieId: string) => movieId !== id);
+      localStorage.setItem("followingMovies", JSON.stringify(updated));
+      setIsFollowing(false);
       toast({
-        title: "Removed from liked",
-        description: `${title} has been removed from your liked list`,
+        title: "Đã bỏ theo dõi",
+        description: `${title} đã được bỏ khỏi danh sách theo dõi`,
       });
     } else {
-      liked.push(id);
-      localStorage.setItem("likedMovies", JSON.stringify(liked));
-      setIsLiked(true);
+      following.push(id);
+      localStorage.setItem("followingMovies", JSON.stringify(following));
+      setIsFollowing(true);
       toast({
-        title: "Added to liked",
-        description: `${title} has been added to your liked list`,
-      });
-    }
-  };
-
-  const handleAddToList = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    const myList = JSON.parse(localStorage.getItem("myList") || "[]");
-    
-    if (isInList) {
-      const updated = myList.filter((movieId: string) => movieId !== id);
-      localStorage.setItem("myList", JSON.stringify(updated));
-      setIsInList(false);
-      toast({
-        title: "Removed from My List",
-        description: `${title} has been removed from your list`,
-      });
-    } else {
-      myList.push(id);
-      localStorage.setItem("myList", JSON.stringify(myList));
-      setIsInList(true);
-      toast({
-        title: "Added to My List",
-        description: `${title} has been added to your list`,
+        title: "Đã theo dõi",
+        description: `${title} đã được thêm vào danh sách theo dõi`,
       });
     }
   };
@@ -98,28 +72,28 @@ const MovieCard = ({ id, image, title, genre, rating }: MovieCardProps) => {
             
             {/* Action Buttons */}
             <div className="flex gap-2 pt-2">
-              <Button size="sm" className="bg-primary hover:bg-primary/90">
-                <Play className="h-4 w-4 fill-current" />
+              <Button 
+                size="sm" 
+                className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate(`/movie/${id}`);
+                }}
+              >
+                <Play className="h-4 w-4 fill-current mr-1" />
+                <span className="text-xs">Xem</span>
               </Button>
               <Button
                 size="sm"
-                variant="ghost"
-                onClick={handleAddToList}
-                className={`${
-                  isInList ? "bg-primary text-white" : "bg-secondary/80"
-                } hover:bg-secondary`}
+                onClick={handleFollow}
+                className={`flex-1 ${
+                  isFollowing 
+                    ? "bg-primary text-primary-foreground hover:bg-primary/90" 
+                    : "bg-secondary/80 text-foreground hover:bg-secondary"
+                }`}
               >
-                <Plus className="h-4 w-4" />
-              </Button>
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={handleLike}
-                className={`${
-                  isLiked ? "bg-primary text-white" : "bg-secondary/80"
-                } hover:bg-secondary`}
-              >
-                <ThumbsUp className="h-4 w-4" />
+                <Heart className={`h-4 w-4 mr-1 ${isFollowing ? "fill-current" : ""}`} />
+                <span className="text-xs">{isFollowing ? "Bỏ theo dõi" : "Theo dõi"}</span>
               </Button>
             </div>
           </div>
