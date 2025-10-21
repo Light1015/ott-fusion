@@ -7,6 +7,7 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import MoviesShows from "./pages/MoviesShows";
 import MovieDetail from "./pages/MovieDetail";
+import MyList from "./pages/MyList";
 import Support from "./pages/Support";
 import Subscription from "./pages/Subscription";
 import NotFound from "./pages/NotFound";
@@ -24,6 +25,7 @@ const App = () => (
           <Route path="/auth" element={<Auth />} />
           <Route path="/movies-shows" element={<MoviesShows />} />
           <Route path="/movie/:id" element={<MovieDetail />} />
+          <Route path="/my-list" element={<MyList />} />
           <Route path="/support" element={<Support />} />
           <Route path="/subscription" element={<Subscription />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

@@ -90,4 +90,13 @@ All colors MUST be HSL.
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
+
+  .nav-icon-hover {
+    transition: var(--transition-smooth);
+  }
+
+  .nav-icon-hover:hover {
+    background-color: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+  }
 }
