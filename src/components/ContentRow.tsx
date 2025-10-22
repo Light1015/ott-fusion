@@ -2,14 +2,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import MovieCard from "./MovieCard";
 import { useRef } from "react";
-
-interface Movie {
-  id: string;
-  image: string;
-  title: string;
-  genre: string;
-  rating: string;
-}
+import { Movie } from "@/data/movies";
 
 interface ContentRowProps {
   title: string;
