@@ -2,15 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import MovieCard from "@/components/MovieCard";
-import { trendingNow, newReleases, popularMovies } from "@/data/movies";
-
-interface Movie {
-  id: string;
-  image: string;
-  title: string;
-  genre?: string;
-  rating?: string;
-}
+import { trendingNow, newReleases, popularMovies, Movie } from "@/data/movies";
 
 const MyList = () => {
   const [followingMovies, setFollowingMovies] = useState<Movie[]>([]);

@@ -1,17 +1,19 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Search, Bell, Heart, ChevronRight } from "lucide-react";
+import { Search, Bell, Heart, ChevronRight, LayoutDashboard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { trendingNow, newReleases, popularMovies } from "@/data/movies";
+import { useUserRole } from "@/hooks/useUserRole";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 
 const Navbar = () => {
@@ -22,6 +24,7 @@ const Navbar = () => {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { isAdmin } = useUserRole();
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -171,6 +174,22 @@ const Navbar = () => {
                   <Heart className="h-4 w-4 mr-2" />
                   <span className="text-sm">Phim đã theo dõi</span>
                 </DropdownMenuItem>
+                {isAdmin && (
+                  <>
+                    <DropdownMenuSeparator className="bg-border" />
+                    <DropdownMenuItem
+                      onClick={() => {
+                        navigate("/dashboard");
+                        setShowUserMenu(false);
+                      }}
+                      className="cursor-pointer py-3 px-3 text-foreground hover:bg-muted"
+                    >
+                      <LayoutDashboard className="h-4 w-4 mr-2" />
+                      <span className="text-sm">Dashboard</span>
+                    </DropdownMenuItem>
+                  </>
+                )}
+                <DropdownMenuSeparator className="bg-border" />
                 <DropdownMenuItem
                   onClick={handleLogout}
                   className="cursor-pointer py-3 px-3 text-foreground hover:bg-muted"
