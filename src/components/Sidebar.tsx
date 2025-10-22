@@ -37,7 +37,7 @@ const Sidebar: React.FC = () => {
   };
 
   return (
-    <aside className="fixed left-0 top-0 bottom-0 w-64 hidden md:flex flex-col bg-card border-r border-border">
+  <aside className="fixed left-0 top-0 bottom-0 w-64 hidden md:flex flex-col bg-card border-r border-border scrollbar-hide">
       <div className="h-20 flex items-center px-6">
         <h2 className="text-lg font-bold text-primary">STREAMIX Admin</h2>
       </div>
@@ -58,8 +58,6 @@ const Sidebar: React.FC = () => {
             <div className="px-4 py-2 text-xs uppercase tracking-wide text-muted-foreground">Quản lý dữ liệu</div>
             <ul className="space-y-1">
               <NavItem to="/categories" icon={Database} label="Phân loại mục" />
-              <NavItem to="/movies" icon={Film} label="Phim" />
-              <NavItem to="/shows" icon={Tv} label="Show" />
               <NavItem to="/reports" icon={FileText} label="Báo cáo người dùng" />
               <NavItem to="/messages" icon={MessageCircle} label="Tin nhắn" />
             </ul>

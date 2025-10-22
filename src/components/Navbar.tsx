@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import { Search, Bell, Heart, ChevronRight, LayoutDashboard } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -23,6 +24,8 @@ const Navbar = () => {
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+  const isDashboard = location.pathname === '/dashboard' || location.pathname.startsWith('/dashboard');
   const { toast } = useToast();
   const { isAdmin } = useUserRole();
 
@@ -38,25 +41,60 @@ const Navbar = () => {
     return () => subscription.unsubscribe();
   }, []);
 
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      toast({
+        title: "Đăng xuất thất bại",
+        description: error.message,
+        // keep default variant if your toast supports variants; optional
+      });
+      return;
+    }
+    // close the dialog first
+    setShowLogoutConfirm(false);
     toast({
-      title: "Logged out",
-      description: "You have been successfully logged out.",
+      title: "Đã đăng xuất",
+      description: "Bạn đã đăng xuất thành công.",
     });
     navigate("/auth");
   };
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
-    if (query.trim()) {
-      const allMovies = [...trendingNow, ...newReleases, ...popularMovies];
-      const results = allMovies.filter((movie) =>
-        movie.title.toLowerCase().includes(query.toLowerCase())
-      );
-      setSearchResults(results.slice(0, 5));
+    if (isDashboard) {
+      const tabs = [
+        { label: 'Dashboard', to: '/dashboard' },
+        { label: 'Leaderboard', to: '/leaderboard' },
+        { label: 'Quản lý', to: '/manage' },
+        { label: 'Người dùng', to: '/users' },
+        { label: 'Phân loại mục', to: '/categories' },
+        { label: 'Báo cáo người dùng', to: '/reports' },
+        { label: 'Tin nhắn', to: '/messages' },
+        { label: 'Cài đặt', to: '/settings' },
+        { label: 'Lịch sử', to: '/history' },
+        { label: 'Đăng xuất', to: '/signout' },
+      ];
+
+      if (query.trim()) {
+        const q = query.toLowerCase();
+        const results = tabs.filter(t => t.label.toLowerCase().includes(q));
+        setSearchResults(results.slice(0, 8));
+      } else {
+        setSearchResults([]);
+      }
     } else {
-      setSearchResults([]);
+      if (query.trim()) {
+        const allMovies = [...trendingNow, ...newReleases, ...popularMovies];
+        const results = allMovies.filter((movie) =>
+          movie.title.toLowerCase().includes(query.toLowerCase())
+        );
+        setSearchResults(results.slice(0, 5));
+      } else {
+        setSearchResults([]);
+      }
     }
   };
 
@@ -69,45 +107,67 @@ const Navbar = () => {
             <h1 className="text-3xl font-bold text-primary cursor-pointer">STREAMIX</h1>
           </Link>
           
-          {/* Menu Items */}
-          <ul className="hidden md:flex items-center gap-6">
-            <li>
-              <Link
-                to="/"
-                className="text-foreground/80 hover:text-foreground transition-colors text-sm font-medium"
-              >
-                Home
-              </Link>
-            </li>
-            <li>
-              <Link
-                to="/movies-shows"
-                className="text-foreground/80 hover:text-foreground transition-colors text-sm font-medium"
-              >
-                Movies & Shows
-              </Link>
-            </li>
-            <li>
-              <Link
-                to="/support"
-                className="text-foreground/80 hover:text-foreground transition-colors text-sm font-medium"
-              >
-                Support
-              </Link>
-            </li>
-            <li>
-              <Link
-                to="/subscription"
-                className="text-foreground/80 hover:text-foreground transition-colors text-sm font-medium"
-              >
-                Subscription
-              </Link>
-            </li>
-          </ul>
+          {/* Show dashboard-only tab-search instead of menu when on dashboard; otherwise keep original menu */}
+          {isDashboard ? (
+            <div className="hidden md:block">
+              <Input
+                placeholder="Tìm tab..."
+                value={searchQuery}
+                onChange={(e) => handleSearch(e.target.value)}
+                onFocus={() => setShowSearch(true)}
+                className="w-80"
+              />
+            </div>
+          ) : (
+            <ul className="hidden md:flex items-center gap-6">
+              <li>
+                <Link
+                  to="/"
+                  className="text-foreground/80 hover:text-foreground transition-colors text-sm font-medium"
+                >
+                  Home
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/movies-shows"
+                  className="text-foreground/80 hover:text-foreground transition-colors text-sm font-medium"
+                >
+                  Movies & Shows
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/support"
+                  className="text-foreground/80 hover:text-foreground transition-colors text-sm font-medium"
+                >
+                  Support
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/subscription"
+                  className="text-foreground/80 hover:text-foreground transition-colors text-sm font-medium"
+                >
+                  Subscription
+                </Link>
+              </li>
+            </ul>
+          )}
         </div>
 
         {/* Right Icons */}
-        <div className="flex items-center gap-4 relative">
+          <div className="flex items-center gap-4 relative">
+          {/* Inline search that queries sidebar tabs */}
+          <div className="hidden sm:block">
+            <Input
+              placeholder="Tìm tab..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onFocus={() => setShowSearch(true)}
+              className="w-64"
+            />
+          </div>
           <Button
             variant="ghost"
             size="icon"
@@ -129,7 +189,7 @@ const Navbar = () => {
           >
             <Bell className="h-5 w-5" />
           </Button>
-          {user ? (
+          {user ? (<>
             <DropdownMenu open={showUserMenu} onOpenChange={setShowUserMenu}>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="nav-icon-hover">
@@ -191,14 +251,30 @@ const Navbar = () => {
                 )}
                 <DropdownMenuSeparator className="bg-border" />
                 <DropdownMenuItem
-                  onClick={handleLogout}
+                  onClick={() => {
+                    // close the user menu then open the confirmation dialog to avoid nested overlays
+                    setShowUserMenu(false);
+                    setShowLogoutConfirm(true);
+                  }}
                   className="cursor-pointer py-3 px-3 text-foreground hover:bg-muted"
                 >
                   <span className="text-sm">Đăng xuất</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-          ) : (
+            {/* Logout confirmation dialog (outside dropdown) */}
+            <Dialog open={showLogoutConfirm} onOpenChange={setShowLogoutConfirm}>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Bạn có chắc muốn đăng xuất?</DialogTitle>
+                </DialogHeader>
+                <DialogFooter>
+                  <Button variant="ghost" onClick={() => setShowLogoutConfirm(false)}>Hủy</Button>
+                  <Button variant="destructive" onClick={() => { setShowLogoutConfirm(false); handleLogout(); }}>Đăng xuất</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </>) : (
             <Button
               variant="ghost"
               size="icon"
@@ -215,50 +291,35 @@ const Navbar = () => {
 
           {/* Search Dropdown */}
           {showSearch && (
-            <div className="absolute top-full right-0 mt-2 w-[400px] bg-card border border-border rounded-lg shadow-lg p-4 z-50">
+            <div className="absolute top-full right-0 mt-2 w-[360px] bg-card border border-border rounded-lg shadow-lg p-2 z-50">
               <Input
                 type="text"
-                placeholder="Search movies & shows..."
+                placeholder="Tìm tab..."
                 value={searchQuery}
                 onChange={(e) => handleSearch(e.target.value)}
-                className="mb-3"
+                className="mb-2"
                 autoFocus
               />
               {searchResults.length > 0 && (
-                <div className="space-y-2 max-h-[400px] overflow-y-auto">
-                  {searchResults.map((movie) => (
+                <div className="space-y-1 max-h-[300px] overflow-y-auto scrollbar-hide p-2">
+                  {searchResults.map((t: any) => (
                     <div
-                      key={movie.id}
+                      key={t.to}
                       onClick={() => {
-                        navigate(`/movie/${movie.id}`);
+                        navigate(t.to);
                         setShowSearch(false);
                         setSearchQuery("");
                         setSearchResults([]);
                       }}
-                      className="flex gap-3 p-2 hover:bg-muted rounded-lg cursor-pointer transition-colors"
+                      className="p-2 hover:bg-muted rounded cursor-pointer"
                     >
-                      <img
-                        src={movie.image}
-                        alt={movie.title}
-                        className="w-16 h-24 object-cover rounded"
-                      />
-                      <div className="flex-1">
-                        <h4 className="font-semibold text-sm mb-1">{movie.title}</h4>
-                        {movie.genre && (
-                          <p className="text-xs text-muted-foreground">{movie.genre}</p>
-                        )}
-                        {movie.rating && (
-                          <p className="text-xs text-primary mt-1">{movie.rating}</p>
-                        )}
-                      </div>
+                      <div className="font-medium text-foreground">{t.label}</div>
                     </div>
                   ))}
                 </div>
               )}
               {searchQuery && searchResults.length === 0 && (
-                <p className="text-center text-muted-foreground text-sm py-4">
-                  No results found
-                </p>
+                <p className="text-center text-muted-foreground text-sm py-4">Không tìm thấy</p>
               )}
             </div>
           )}

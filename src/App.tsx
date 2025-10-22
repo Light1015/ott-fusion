@@ -13,6 +13,15 @@ import Subscription from "./pages/Subscription";
 import Profile from "./pages/Profile";
 import Dashboard from "./pages/Dashboard";
 import UsersAdminPage from "./pages/admin/Users";
+import Leaderboard from "./pages/admin/Leaderboard";
+import Manage from "./pages/admin/Manage";
+import Categories from "./pages/admin/Categories";
+// Movies and Shows merged into Categories page
+import Reports from "./pages/admin/Reports";
+import Messages from "./pages/admin/Messages";
+import Settings from "./pages/admin/Settings";
+import History from "./pages/admin/History";
+import Signout from "./pages/admin/Signout";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -33,7 +42,16 @@ const App = () => (
           <Route path="/subscription" element={<Subscription />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/leaderboard" element={<Leaderboard />} />
+          <Route path="/manage" element={<Manage />} />
           <Route path="/users" element={<UsersAdminPage />} />
+          <Route path="/categories" element={<Categories />} />
+          {/* /movies and /shows merged into /categories */}
+          <Route path="/reports" element={<Reports />} />
+          <Route path="/messages" element={<Messages />} />
+          <Route path="/settings" element={<Settings />} />
+          <Route path="/history" element={<History />} />
+          <Route path="/signout" element={<Signout />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
