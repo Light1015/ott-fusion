@@ -92,11 +92,14 @@ All colors MUST be HSL.
   }
 
   .nav-icon-hover {
+    @apply inline-flex items-center justify-center rounded-full p-2;
     transition: var(--transition-smooth);
   }
 
   .nav-icon-hover:hover {
     background-color: hsl(var(--primary));
     color: hsl(var(--primary-foreground));
+    transform: scale(1.05);
+    box-shadow: var(--shadow-glow);
   }
 }
