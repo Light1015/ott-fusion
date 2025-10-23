@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { useNavigate, Link, useLocation } from "react-router-dom";
-import { Search, Bell, Heart, ChevronRight, LayoutDashboard } from "lucide-react";
+import { useNavigate, Link, useLocation, NavLink } from "react-router-dom";
+import { Search, Bell, Heart, ChevronRight, LayoutDashboard, Home } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -80,7 +80,7 @@ const Navbar = () => {
 
       if (query.trim()) {
         const q = query.toLowerCase();
-        const results = tabs.filter(t => t.label.toLowerCase().includes(q));
+        const results = tabs.filter(t => t.label.toLowerCase().startsWith(q));
         setSearchResults(results.slice(0, 8));
       } else {
         setSearchResults([]);
@@ -88,8 +88,9 @@ const Navbar = () => {
     } else {
       if (query.trim()) {
         const allMovies = [...trendingNow, ...newReleases, ...popularMovies];
+        const q = query.toLowerCase();
         const results = allMovies.filter((movie) =>
-          movie.title.toLowerCase().includes(query.toLowerCase())
+          movie.title.toLowerCase().startsWith(q)
         );
         setSearchResults(results.slice(0, 5));
       } else {
@@ -100,74 +101,68 @@ const Navbar = () => {
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-gradient-to-b from-background to-transparent">
-      <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+  <div className="container mx-auto px-4 py-4 flex items-center justify-between relative">
         {/* Logo */}
         <div className="flex items-center gap-8">
           <Link to="/">
-            <h1 className="text-3xl font-bold text-primary cursor-pointer">STREAMIX</h1>
+            {!isDashboard ? (
+              <h1 className="text-3xl font-bold text-primary cursor-pointer">STREAMIX</h1>
+            ) : (
+              <div className=""></div>
+            )}
           </Link>
-          
           {/* Show dashboard-only tab-search instead of menu when on dashboard; otherwise keep original menu */}
           {isDashboard ? (
             <div className="hidden md:block">
-              <Input
-                placeholder="Tìm tab..."
-                value={searchQuery}
-                onChange={(e) => handleSearch(e.target.value)}
-                onFocus={() => setShowSearch(true)}
-                className="w-80"
-              />
+             
             </div>
-          ) : (
-            <ul className="hidden md:flex items-center gap-6">
-              <li>
-                <Link
-                  to="/"
-                  className="text-foreground/80 hover:text-foreground transition-colors text-sm font-medium"
-                >
-                  Home
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/movies-shows"
-                  className="text-foreground/80 hover:text-foreground transition-colors text-sm font-medium"
-                >
-                  Movies & Shows
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/support"
-                  className="text-foreground/80 hover:text-foreground transition-colors text-sm font-medium"
-                >
-                  Support
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/subscription"
-                  className="text-foreground/80 hover:text-foreground transition-colors text-sm font-medium"
-                >
-                  Subscription
-                </Link>
-              </li>
-            </ul>
+          ) : null}
+
+          {/* Centered top tabs (desktop) */}
+          {!isDashboard && (
+            <nav className="hidden md:block absolute left-1/2 transform -translate-x-1/2">
+              <ul className="flex items-center gap-3 bg-card border-2 border-border rounded-lg px-1 py-3"> 
+                <li>
+                  <NavLink
+                    to="/"
+                    end
+                    className={({ isActive }) => `mx-1 px-5 py-2 rounded-lg text-sm font-medium transition-colors ${isActive ? 'bg-muted text-foreground' : 'text-foreground/80 hover:text-foreground'}`} 
+                  >
+                    Home
+                  </NavLink>
+                </li>
+                <li>
+                  <NavLink
+                    to="/movies-shows"
+                    className={({ isActive }) => `mx-1 px-5 py-2 rounded-lg text-sm font-medium transition-colors ${isActive ? 'bg-muted text-foreground' : 'text-foreground/80 hover:text-foreground'}`} 
+                  >
+                    Movies & Shows
+                  </NavLink>
+                </li>
+                <li>
+                  <NavLink
+                    to="/support"
+                    className={({ isActive }) => `mx-1 px-5 py-2 rounded-lg text-sm font-medium transition-colors ${isActive ? 'bg-muted text-foreground' : 'text-foreground/80 hover:text-foreground'}`} 
+                  >
+                    Support
+                  </NavLink>
+                </li>
+                <li>
+                  <NavLink
+                    to="/subscription"
+                    className={({ isActive }) => `mx-1 px-5 py-2 rounded-lg text-sm font-medium transition-colors ${isActive ? 'bg-muted text-foreground' : 'text-foreground/80 hover:text-foreground'}`} 
+                  >
+                    Subscriptions
+                  </NavLink>
+                </li>
+              </ul>
+            </nav>
           )}
         </div>
 
         {/* Right Icons */}
           <div className="flex items-center gap-4 relative">
           {/* Inline search that queries sidebar tabs */}
-          <div className="hidden sm:block">
-            <Input
-              placeholder="Tìm tab..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onFocus={() => setShowSearch(true)}
-              className="w-64"
-            />
-          </div>
           <Button
             variant="ghost"
             size="icon"
@@ -234,21 +229,24 @@ const Navbar = () => {
                   <Heart className="h-4 w-4 mr-2" />
                   <span className="text-sm">Phim đã theo dõi</span>
                 </DropdownMenuItem>
-                {isAdmin && (
-                  <>
-                    <DropdownMenuSeparator className="bg-border" />
-                    <DropdownMenuItem
-                      onClick={() => {
-                        navigate("/dashboard");
-                        setShowUserMenu(false);
-                      }}
-                      className="cursor-pointer py-3 px-3 text-foreground hover:bg-muted"
-                    >
+                <>
+                  <DropdownMenuSeparator className="bg-border" />
+                  <DropdownMenuItem
+                    onClick={() => {
+                      const target = isDashboard ? "/" : "/dashboard";
+                      setShowUserMenu(false);
+                      navigate(target);
+                    }}
+                    className="cursor-pointer py-3 px-3 text-foreground hover:bg-muted"
+                  >
+                    {isDashboard ? (
+                      <Home className="h-4 w-4 mr-2" />
+                    ) : (
                       <LayoutDashboard className="h-4 w-4 mr-2" />
-                      <span className="text-sm">Dashboard</span>
-                    </DropdownMenuItem>
-                  </>
-                )}
+                    )}
+                    <span className="text-sm">{isDashboard ? 'Trang chủ' : 'Bảng điều khiển'}</span>
+                  </DropdownMenuItem>
+                </>
                 <DropdownMenuSeparator className="bg-border" />
                 <DropdownMenuItem
                   onClick={() => {
@@ -294,7 +292,7 @@ const Navbar = () => {
             <div className="absolute top-full right-0 mt-2 w-[360px] bg-card border border-border rounded-lg shadow-lg p-2 z-50">
               <Input
                 type="text"
-                placeholder="Tìm tab..."
+                placeholder={isDashboard ? "Tìm tab..." : "Tìm phim, show..."}
                 value={searchQuery}
                 onChange={(e) => handleSearch(e.target.value)}
                 className="mb-2"
@@ -302,20 +300,36 @@ const Navbar = () => {
               />
               {searchResults.length > 0 && (
                 <div className="space-y-1 max-h-[300px] overflow-y-auto scrollbar-hide p-2">
-                  {searchResults.map((t: any) => (
-                    <div
-                      key={t.to}
-                      onClick={() => {
-                        navigate(t.to);
-                        setShowSearch(false);
-                        setSearchQuery("");
-                        setSearchResults([]);
-                      }}
-                      className="p-2 hover:bg-muted rounded cursor-pointer"
-                    >
-                      <div className="font-medium text-foreground">{t.label}</div>
-                    </div>
-                  ))}
+                  {searchResults.map((item: any) => {
+                    const isTab = Boolean(item.to);
+                    const key = isTab ? item.to : item.id;
+                    return (
+                      <div
+                        key={key}
+                        onClick={() => {
+                          if (isTab) {
+                            navigate(item.to);
+                          } else if (item.id) {
+                            navigate(`/movie/${item.id}`);
+                          }
+                          setShowSearch(false);
+                          setSearchQuery("");
+                          setSearchResults([]);
+                        }}
+                        className="flex items-center gap-3 p-2 hover:bg-muted rounded cursor-pointer"
+                      >
+                        {!isTab && (
+                          <img src={item.image} alt={item.title} className="w-12 h-16 object-cover rounded" />
+                        )}
+                        <div className="flex-1">
+                          <div className="font-medium text-foreground">{isTab ? item.label : item.title}</div>
+                          {!isTab && item.year && (
+                            <div className="text-xs text-muted-foreground">{item.year}</div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
               {searchQuery && searchResults.length === 0 && (

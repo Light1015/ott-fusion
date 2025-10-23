@@ -39,7 +39,9 @@ const Sidebar: React.FC = () => {
   return (
   <aside className="fixed left-0 top-0 bottom-0 w-64 hidden md:flex flex-col bg-card border-r border-border scrollbar-hide">
       <div className="h-20 flex items-center px-6">
-        <h2 className="text-lg font-bold text-primary">STREAMIX Admin</h2>
+        <Link to="/">
+          <h2 className="text-lg font-bold text-primary">STREAMIX Admin</h2>
+        </Link>
       </div>
       <nav className="flex-1 overflow-y-auto px-2 py-4">
         <ul className="space-y-1">
