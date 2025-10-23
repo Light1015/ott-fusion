@@ -3,134 +3,194 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { Search, Ban, UserCheck, Trash2 } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
-type UserRole = {
+type AuthUser = {
   id: string;
-  user_id: string;
-  role: string;
+  email?: string;
   created_at: string;
+  banned_until?: string;
 };
 
 const UsersAdminPage: React.FC = () => {
-  const [roles, setRoles] = useState<UserRole[]>([]);
+  const [users, setUsers] = useState<AuthUser[]>([]);
   const [loading, setLoading] = useState(false);
-  const [newUserId, setNewUserId] = useState('');
-  const [newRole, setNewRole] = useState<'user' | 'moderator' | 'admin'>('user');
+  const [searchTerm, setSearchTerm] = useState('');
+  const { toast } = useToast();
 
   useEffect(() => {
-    fetchRoles();
+    fetchUsers();
   }, []);
 
-  const fetchRoles = async () => {
+  const fetchUsers = async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from('user_roles')
-      .select('*')
-      .order('created_at', { ascending: false });
+    // Note: In a real scenario, you'd need a server-side function to list auth.users
+    // For now, we'll show a message about this limitation
+    setLoading(false);
+    toast({
+      title: "Thông báo",
+      description: "Để hiển thị danh sách người dùng từ auth.users, cần tạo edge function với service_role key",
+      variant: "default",
+    });
+  };
 
-    if (error) {
-      console.error('Error fetching roles', error);
-    } else {
-      setRoles(data as UserRole[]);
-    }
+  const handleBanUser = async (userId: string) => {
+    if (!confirm('Bạn có chắc muốn chặn người dùng này?')) return;
+
+    setLoading(true);
+    // This would need to be implemented via edge function with service_role
+    toast({
+      title: "Chức năng đang phát triển",
+      description: "Cần edge function với service_role để chặn người dùng",
+      variant: "default",
+    });
     setLoading(false);
   };
 
-  const handleAddRole = async () => {
-    if (!newUserId || !newRole) return;
-    setLoading(true);
-    const { error } = await supabase
-      .from('user_roles')
-      .insert([{ user_id: newUserId, role: newRole } as { user_id: string; role: 'user' | 'moderator' | 'admin' }]);
+  const handleUnbanUser = async (userId: string) => {
+    if (!confirm('Bạn có chắc muốn gỡ chặn người dùng này?')) return;
 
-    if (error) console.error('Error adding role', error);
-    else {
-      setNewUserId('');
-      fetchRoles();
-    }
+    setLoading(true);
+    // This would need to be implemented via edge function with service_role
+    toast({
+      title: "Chức năng đang phát triển",
+      description: "Cần edge function với service_role để gỡ chặn người dùng",
+      variant: "default",
+    });
     setLoading(false);
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDeleteUser = async (userId: string) => {
+    if (!confirm('⚠️ CẢNH BÁO: Bạn có chắc muốn XÓA VĨNH VIỄN người dùng này? Hành động này không thể hoàn tác!')) return;
+
     setLoading(true);
-    const { error } = await supabase.from('user_roles').delete().eq('id', id);
-    if (error) console.error('Error deleting role', error);
-    else fetchRoles();
+    // This would need to be implemented via edge function with service_role
+    toast({
+      title: "Chức năng đang phát triển",
+      description: "Cần edge function với service_role để xóa người dùng",
+      variant: "default",
+    });
     setLoading(false);
   };
+
+  const filteredUsers = users.filter(user => 
+    user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    user.id.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
-  <div className="min-h-screen bg-background md:pl-64 pt-24 px-6 md:px-20 scrollbar-hide">
-      <div className="container mx-auto">
-        <h1 className="text-3xl font-bold text-foreground mb-6">Quản lý Người dùng & Roles</h1>
+    <>
+      <h1 className="text-3xl font-bold text-foreground mb-6">Quản lý Người Dùng</h1>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-          <Card className="bg-card border-border">
-            <CardHeader>
-              <CardTitle>Thêm Role</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <Input
-                  placeholder="User ID (UUID từ Supabase Auth)"
-                  value={newUserId}
-                  onChange={(e) => setNewUserId(e.target.value)}
-                />
-                <select
-                  className="w-full p-2 rounded border border-border bg-background text-foreground"
-                  value={newRole}
-                  onChange={(e) => setNewRole(e.target.value as 'user' | 'moderator' | 'admin')}
-                >
-                  <option value="user">user</option>
-                  <option value="moderator">moderator</option>
-                  <option value="admin">admin</option>
-                </select>
-                <div className="flex justify-end">
-                  <Button onClick={handleAddRole} disabled={loading}>
-                    Thêm
-                  </Button>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Lưu ý: Client không thể liệt kê `auth.users` (email) do hạn chế client-side. Nếu bạn cần
-                  hiển thị email, tạo bảng `profiles` mirror email hoặc cung cấp endpoint server-side sử dụng service_role.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-
-          <div className="lg:col-span-2">
-            <Card className="bg-card border-border">
-              <CardHeader>
-                <CardTitle>Danh sách Roles</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {loading ? (
-                  <div>Đang tải...</div>
-                ) : (
-                  <div className="space-y-3">
-                    {roles.length === 0 && <div className="text-muted-foreground">Không có dữ liệu</div>}
-                    {roles.map((r) => (
-                      <div key={r.id} className="flex items-center justify-between p-3 rounded border border-border">
-                        <div>
-                          <div className="font-medium text-foreground">{r.user_id}</div>
-                          <div className="text-xs text-muted-foreground">{r.role} • {new Date(r.created_at).toLocaleString()}</div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Button variant="destructive" onClick={() => handleDelete(r.id)}>
-                            Xóa
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+      <Card className="bg-card border-border mb-6">
+        <CardHeader>
+          <CardTitle>Tìm kiếm Người Dùng</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="relative">
+            <Search className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder="Tìm theo email hoặc User ID..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
           </div>
-        </div>
+        </CardContent>
+      </Card>
+
+      <Card className="bg-card border-border">
+        <CardHeader>
+          <CardTitle className="flex items-center justify-between">
+            <span>Danh sách Người Dùng</span>
+            <Badge variant="secondary">{filteredUsers.length} người dùng</Badge>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-4 mb-4">
+            <p className="text-sm text-yellow-600 dark:text-yellow-400">
+              <strong>Lưu ý:</strong> Để quản lý người dùng từ bảng auth.users, bạn cần tạo một Supabase Edge Function với service_role key. 
+              Client-side không thể truy cập trực tiếp vào bảng auth.users vì lý do bảo mật.
+            </p>
+          </div>
+
+          {loading ? (
+            <div className="text-center text-muted-foreground py-8">Đang tải...</div>
+          ) : (
+            <div className="space-y-3">
+              {filteredUsers.length === 0 ? (
+                <div className="text-center text-muted-foreground py-8">
+                  Chưa có người dùng hoặc cần triển khai edge function để hiển thị
+                </div>
+              ) : (
+                filteredUsers.map((user) => (
+                  <div key={user.id} className="flex items-center justify-between p-4 rounded-lg border border-border bg-muted/50">
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium text-foreground">{user.email || 'Không có email'}</div>
+                      <div className="font-mono text-xs text-muted-foreground truncate">{user.id}</div>
+                      <div className="text-xs text-muted-foreground mt-1">
+                        Tham gia: {new Date(user.created_at).toLocaleDateString()}
+                      </div>
+                      {user.banned_until && (
+                        <Badge variant="destructive" className="mt-2">
+                          Bị chặn đến {new Date(user.banned_until).toLocaleDateString()}
+                        </Badge>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2 ml-4">
+                      {user.banned_until ? (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleUnbanUser(user.id)}
+                          disabled={loading}
+                        >
+                          <UserCheck className="w-4 h-4 mr-2" />
+                          Gỡ chặn
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleBanUser(user.id)}
+                          disabled={loading}
+                        >
+                          <Ban className="w-4 h-4 mr-2" />
+                          Chặn
+                        </Button>
+                      )}
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => handleDeleteUser(user.id)}
+                        disabled={loading}
+                      >
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        Xóa
+                      </Button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <div className="mt-6 p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+        <h3 className="font-semibold text-foreground mb-2">Hướng dẫn triển khai:</h3>
+        <ol className="text-sm text-muted-foreground space-y-1 list-decimal list-inside">
+          <li>Tạo Supabase Edge Function với service_role key</li>
+          <li>Edge function sẽ query auth.users table</li>
+          <li>Triển khai các chức năng ban/unban/delete user qua Admin API</li>
+          <li>Gọi edge function từ frontend này</li>
+        </ol>
       </div>
-    </div>
+    </>
   );
 };
 
 export default UsersAdminPage;
+
