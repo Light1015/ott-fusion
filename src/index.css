@@ -46,7 +46,7 @@ All colors MUST be HSL.
     /* Shadows */
     --shadow-glow: 0 0 40px rgba(229, 9, 20, 0.3);
     --shadow-card: 0 4px 12px rgba(0, 0, 0, 0.5);
-    
+
     /* Transitions */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
@@ -89,6 +89,27 @@ All colors MUST be HSL.
   .scrollbar-hide {
     -ms-overflow-style: none;
     scrollbar-width: none;
+  }
+
+  /* Hide native scrollbars globally but keep scrolling enabled */
+  html,
+  body,
+  #root,
+  .App {
+    -ms-overflow-style: none;
+    /* IE and Edge */
+    scrollbar-width: none;
+    /* Firefox */
+  }
+
+  html::-webkit-scrollbar,
+  body::-webkit-scrollbar,
+  #root::-webkit-scrollbar,
+  .App::-webkit-scrollbar {
+    width: 0px;
+    height: 0px;
+    display: none;
+    /* Safari and Chrome */
   }
 
   .nav-icon-hover {

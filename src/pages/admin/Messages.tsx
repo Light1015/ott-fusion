@@ -125,6 +125,7 @@ const Messages: React.FC = () => {
       <div className="min-h-screen bg-background pt-6 px-6">
         <div className="container mx-auto">
           <h1 className="text-3xl font-bold mb-6">Tin nhắn</h1>
+          {/* separator intentionally omitted in loading state */}
           <p className="text-muted-foreground">Đang tải...</p>
         </div>
       </div>
@@ -134,8 +135,10 @@ const Messages: React.FC = () => {
   return (
     <div className="min-h-screen bg-background pt-6 px-6">
       <div className="container mx-auto max-w-7xl">
-        <h1 className="text-3xl font-bold mb-6">Tin nhắn từ người dùng</h1>
-        
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold">Tin nhắn từ người dùng</h1>
+          <div className="my-4 border-t border-border" />
+        </div>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 h-[calc(100vh-200px)]">
           {/* Message List - Gmail style */}
           <Card className="lg:col-span-1 overflow-hidden flex flex-col">

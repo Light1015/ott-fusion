@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard,
@@ -18,6 +18,8 @@ import {
 
 const Sidebar: React.FC = () => {
   const location = useLocation();
+  const [openCategories, setOpenCategories] = useState(true);
+  const [openDataMgmt, setOpenDataMgmt] = useState(false);
 
   const NavItem: React.FC<{ to: string; icon?: any; label: string }> = ({ to, icon: Icon, label }) => {
     const active = location.pathname === to;
@@ -43,7 +45,7 @@ const Sidebar: React.FC = () => {
           <h2 className="text-lg font-bold text-primary">STREAMIX Admin</h2>
         </Link>
       </div>
-      <nav className="flex-1 overflow-y-auto px-2 py-4">
+  <nav className="flex-1 overflow-y-auto px-2 py-4 scrollbar-hide">
         <ul className="space-y-1">
           <NavItem to="/dashboard" icon={LayoutDashboard} label="Dashboard" />
           <NavItem to="/leaderboard" icon={Trophy} label="Leaderboard" />
@@ -57,9 +59,45 @@ const Sidebar: React.FC = () => {
           </li>
 
           <li>
-            <div className="px-4 py-2 text-xs uppercase tracking-wide text-muted-foreground">Quản lý dữ liệu</div>
+            <div className="px-4 py-2 text-xs uppercase tracking-wide text-muted-foreground flex items-center justify-between">
+              <span>Quản lý dữ liệu</span>
+            </div>
             <ul className="space-y-1">
-              <NavItem to="/categories" icon={Database} label="Phân loại mục" />
+              <li>
+                <button
+                  onClick={() => setOpenCategories(!openCategories)}
+                  className="w-full flex items-center gap-3 px-4 py-3 rounded-md text-sm font-medium text-foreground/90 hover:bg-muted"
+                >
+                  <Database className="w-4 h-4" />
+                  <span>Phân loại mục</span>
+                </button>
+                {openCategories && (
+                  <ul className="mt-1 ml-6 space-y-1">
+                    <NavItem to="/categories" icon={List} label="Tổng quan phân loại" />
+                    <NavItem to="/categories/genres" icon={Film} label="Thể loại" />
+                    <NavItem to="/categories/years" icon={Clock} label="Năm sản xuất" />
+                    <NavItem to="/categories/directors" icon={Users} label="Đạo diễn" />
+                    <NavItem to="/categories/cast" icon={Users} label="Diễn viên" />
+                  </ul>
+                )}
+              </li>
+
+              <li>
+                <button
+                  onClick={() => setOpenDataMgmt(!openDataMgmt)}
+                  className="w-full flex items-center gap-3 px-4 py-3 rounded-md text-sm font-medium text-foreground/90 hover:bg-muted"
+                >
+                  <Film className="w-4 h-4" />
+                  <span>Quản lý nội dung</span>
+                </button>
+                {openDataMgmt && (
+                  <ul className="mt-1 ml-6 space-y-1">
+                    <NavItem to="/admin/data/movies" icon={Film} label="Phim" />
+                    <NavItem to="/admin/data/shows" icon={Tv} label="Show" />
+                  </ul>
+                )}
+              </li>
+
               <NavItem to="/reports" icon={FileText} label="Báo cáo người dùng" />
               <NavItem to="/messages" icon={MessageCircle} label="Tin nhắn" />
             </ul>

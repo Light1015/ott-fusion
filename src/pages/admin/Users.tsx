@@ -16,6 +16,7 @@ import {
 import { Search, Ban, UserCheck, Trash2, Eye } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import UserDetailsDialog from '@/components/UserDetailsDialog';
+import { Separator } from '@/components/ui/separator';
 
 type AuthUser = {
   id: string;
@@ -132,17 +133,25 @@ const UsersAdminPage: React.FC = () => {
   const handleDeleteUser = async (userId: string) => {
     setLoading(true);
     try {
-      const { error } = await supabase.functions.invoke('admin-users', {
+      const res: any = await supabase.functions.invoke('admin-users', {
         body: { action: 'delete', userId },
       });
 
+      // supabase functions.invoke may return { data, error } or a Response-like object.
+      const data = res?.data ?? res;
+      const error = res?.error ?? (data?.error ?? null);
+
       if (error) throw error;
+
+      // If backend confirms deletion, update local state immediately for snappy UX.
+      setUsers((prev) => prev.filter((u) => u.id !== userId));
 
       toast({
         title: "Thành công",
         description: "Đã xóa người dùng",
       });
       setDetailsOpen(false);
+      // Try to refresh list as well; if backend doesn't support list immediately this is fine.
       fetchUsers();
     } catch (error: any) {
       toast({
@@ -181,10 +190,14 @@ const UsersAdminPage: React.FC = () => {
   );
 
   return (
-    <>
-      <h1 className="text-3xl font-bold text-foreground mb-6">Quản lý Người Dùng</h1>
+    <div className="min-h-screen bg-background md:pl-64 pt-24 px-6 md:px-20 scrollbar-hide">
+      <div className="container mx-auto">
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold text-foreground">Quản lý Người Dùng</h1>
+          <Separator className="my-4" />
+        </div>
 
-      <Card className="bg-card border-border mb-6">
+        <Card className="bg-card border-border mb-6">
         <CardHeader>
           <CardTitle>Tìm kiếm Người Dùng</CardTitle>
         </CardHeader>
@@ -199,9 +212,9 @@ const UsersAdminPage: React.FC = () => {
             />
           </div>
         </CardContent>
-      </Card>
+        </Card>
 
-      <Card className="bg-card border-border">
+        <Card className="bg-card border-border">
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
             <span>Danh sách Người Dùng</span>
@@ -316,7 +329,8 @@ const UsersAdminPage: React.FC = () => {
         onDelete={handleDeleteUser}
         loading={loading}
       />
-    </>
+      </div>
+    </div>
   );
 };
 

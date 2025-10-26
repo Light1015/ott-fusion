@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Shield, User, Crown } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { Separator } from '@/components/ui/separator';
 
 type UserRole = {
   id: string;
@@ -125,10 +126,14 @@ const Manage: React.FC = () => {
   const userRoles = roles.filter(r => r.role === 'user');
 
   return (
-    <>
-      <h1 className="text-3xl font-bold text-foreground mb-6">Quản lý Phân Quyền</h1>
+    <div className="min-h-screen bg-background md:pl-64 pt-24 px-6 md:px-20 scrollbar-hide">
+      <div className="container mx-auto">
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold text-foreground">Quản lý Phân Quyền</h1>
+          <Separator className="my-4" />
+        </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
         <Card className="bg-card border-border">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -287,7 +292,8 @@ const Manage: React.FC = () => {
           )}
         </CardContent>
       </Card>
-    </>
+      </div>
+    </div>
   );
 };
 
