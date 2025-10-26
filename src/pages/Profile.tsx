@@ -4,36 +4,88 @@ import Navbar from "@/components/Navbar";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Home, User, CreditCard, Tv, Users, BookMarked, LogOut, ChevronRight } from "lucide-react";
+import { Home, User, CreditCard, Tv, Users, BookMarked, LogOut, ChevronRight, Edit } from "lucide-react";
+import { ProfileEditDialog } from "@/components/ProfileEditDialog";
+import { PasswordChangeDialog } from "@/components/PasswordChangeDialog";
+import { LogoutConfirmDialog } from "@/components/LogoutConfirmDialog";
+import MovieCard from "@/components/MovieCard";
+import { trendingNow, newReleases, popularMovies } from "@/data/movies";
 
 const Profile = () => {
   const [user, setUser] = useState<any>(null);
+  const [profile, setProfile] = useState<any>(null);
   const [activeTab, setActiveTab] = useState("overview");
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [passwordDialogOpen, setPasswordDialogOpen] = useState(false);
+  const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
+  const [followingMovies, setFollowingMovies] = useState<any[]>([]);
   const navigate = useNavigate();
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    const initAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         navigate("/auth");
       } else {
         setUser(session.user);
+        await fetchProfile(session.user.id);
       }
-    });
+    };
+
+    initAuth();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!session) {
         navigate("/auth");
       } else {
         setUser(session.user);
+        fetchProfile(session.user.id);
       }
     });
 
     return () => subscription.unsubscribe();
   }, [navigate]);
 
+  useEffect(() => {
+    // Load following movies from localStorage
+    const savedFollowing = localStorage.getItem("followingMovies");
+    if (savedFollowing) {
+      try {
+        const movieIds = JSON.parse(savedFollowing);
+        const allMovies = [...trendingNow, ...newReleases, ...popularMovies];
+        const following = allMovies.filter(movie => movieIds.includes(movie.id));
+        setFollowingMovies(following);
+      } catch (error) {
+        console.error("Error loading following movies:", error);
+      }
+    }
+  }, []);
+
+  const fetchProfile = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      if (error) throw error;
+      setProfile(data);
+    } catch (error) {
+      console.error("Error fetching profile:", error);
+    }
+  };
+
   const handleLogout = async () => {
+    setLogoutDialogOpen(false);
     await supabase.auth.signOut();
     navigate("/auth");
+  };
+
+  const handleProfileUpdate = () => {
+    if (user) {
+      fetchProfile(user.id);
+    }
   };
 
   const menuItems = [
@@ -69,7 +121,7 @@ const Profile = () => {
                 </button>
               ))}
               <button
-                onClick={handleLogout}
+                onClick={() => setLogoutDialogOpen(true)}
                 className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-foreground/70 hover:bg-muted/50 hover:text-foreground transition-colors"
               >
                 <LogOut className="h-5 w-5" />
@@ -87,22 +139,25 @@ const Profile = () => {
                   
                   <div className="space-y-4">
                     <div className="bg-muted/30 rounded-lg p-6">
-                      <h3 className="font-semibold text-foreground mb-4">Đoạn Trang</h3>
+                      <h3 className="font-semibold text-foreground mb-4">{profile?.display_name || "User"}</h3>
                       <div className="flex items-center gap-4">
                         <Avatar className="h-16 w-16">
                           <AvatarImage src="" />
                           <AvatarFallback className="bg-primary text-primary-foreground text-xl">
-                            {user?.email?.[0].toUpperCase() || "U"}
+                            {profile?.display_name?.[0]?.toUpperCase() || user?.email?.[0].toUpperCase() || "U"}
                           </AvatarFallback>
                         </Avatar>
                         <div>
-                          <p className="font-medium text-foreground">{user?.email || "User"}</p>
+                          <p className="font-medium text-foreground">{profile?.display_name || user?.email || "User"}</p>
                           <p className="text-sm text-muted-foreground">{user?.email}</p>
                         </div>
                       </div>
                     </div>
 
-                    <button className="w-full flex items-center justify-between bg-muted/30 hover:bg-muted/50 rounded-lg p-6 transition-colors">
+                    <button 
+                      onClick={() => setActiveTab("account")}
+                      className="w-full flex items-center justify-between bg-muted/30 hover:bg-muted/50 rounded-lg p-6 transition-colors"
+                    >
                       <div className="flex items-center gap-3">
                         <User className="h-5 w-5 text-foreground/70" />
                         <span className="text-foreground font-medium">Thông tin tài khoản</span>
@@ -115,28 +170,37 @@ const Profile = () => {
 
               {activeTab === "account" && (
                 <div className="space-y-6">
-                  <h2 className="text-2xl font-bold text-foreground mb-6">Thông tin tài khoản</h2>
+                  <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-2xl font-bold text-foreground">Thông tin tài khoản</h2>
+                    <Button onClick={() => setEditDialogOpen(true)} size="sm">
+                      <Edit className="h-4 w-4 mr-2" />
+                      Chỉnh sửa
+                    </Button>
+                  </div>
                   
                   <div className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <label className="text-sm text-muted-foreground">Tên tài khoản</label>
-                        <p className="text-foreground font-medium mt-1">Đoạn Trang</p>
+                        <p className="text-foreground font-medium mt-1">{profile?.display_name || "Chưa cập nhật"}</p>
                       </div>
                       <div>
-                        <label className="text-sm text-muted-foreground">UID</label>
-                        <p className="text-foreground font-medium mt-1">97990619</p>
+                        <label className="text-sm text-muted-foreground">Email</label>
+                        <p className="text-foreground font-medium mt-1">{user?.email || "N/A"}</p>
                       </div>
                       <div>
                         <label className="text-sm text-muted-foreground">Số điện thoại</label>
-                        <p className="text-foreground font-medium mt-1">0392836881</p>
+                        <p className="text-foreground font-medium mt-1">{profile?.phone || "Chưa cập nhật"}</p>
                       </div>
                       <div>
-                        <label className="text-sm text-muted-foreground">Mã quản lý</label>
-                        <div className="flex items-center gap-2 mt-1">
-                          <p className="text-foreground font-medium">••••••</p>
-                          <ChevronRight className="h-4 w-4 text-foreground/50" />
-                        </div>
+                        <label className="text-sm text-muted-foreground">Mật khẩu</label>
+                        <button 
+                          onClick={() => setPasswordDialogOpen(true)}
+                          className="flex items-center gap-2 mt-1 text-foreground font-medium hover:text-primary transition-colors"
+                        >
+                          <p>••••••</p>
+                          <ChevronRight className="h-4 w-4" />
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -201,11 +265,23 @@ const Profile = () => {
                 <div className="space-y-6">
                   <h2 className="text-2xl font-bold text-foreground mb-6">Thư viện</h2>
                   <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
-                      Đang theo dõi
-                      <ChevronRight className="h-5 w-5" />
-                    </h3>
-                    <p className="text-muted-foreground">Các phim và chương trình bạn đang theo dõi sẽ xuất hiện ở đây</p>
+                    <h3 className="text-lg font-semibold text-foreground">Đang theo dõi</h3>
+                    {followingMovies.length > 0 ? (
+                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                        {followingMovies.map((movie) => (
+                          <MovieCard 
+                            key={movie.id}
+                            id={movie.id}
+                            image={movie.image}
+                            title={movie.title}
+                            genre={movie.genre}
+                            rating={movie.rating}
+                          />
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-muted-foreground">Các phim và chương trình bạn đang theo dõi sẽ xuất hiện ở đây</p>
+                    )}
                   </div>
                 </div>
               )}
@@ -213,6 +289,30 @@ const Profile = () => {
           </div>
         </div>
       </div>
+
+      {user && profile && (
+        <>
+          <ProfileEditDialog
+            open={editDialogOpen}
+            onOpenChange={setEditDialogOpen}
+            userId={user.id}
+            currentDisplayName={profile.display_name || ""}
+            currentPhone={profile.phone || ""}
+            onSuccess={handleProfileUpdate}
+          />
+          <PasswordChangeDialog
+            open={passwordDialogOpen}
+            onOpenChange={setPasswordDialogOpen}
+            userEmail={user.email || ""}
+          />
+        </>
+      )}
+
+      <LogoutConfirmDialog
+        open={logoutDialogOpen}
+        onOpenChange={setLogoutDialogOpen}
+        onConfirm={handleLogout}
+      />
     </div>
   );
 };
